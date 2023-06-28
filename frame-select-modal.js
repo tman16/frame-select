@@ -12,13 +12,8 @@
       description: `A bespoke gallery-grade frame with a premium anodized matt silver finish. Handmade in UK with premium materials.`
     }
   ];
-    
-    let selected_option2;
     function generateCache() {
       let framing_cache = {};
-      const frame_options = {{ product.metafields.custom.frame_options.value | json }};
-      console.log('frame_options',frame_options)
-      
       framing_cache.frame_combinations = frame_options;
       framing_cache.frame_options = frame_options.reduce((accumulator, current) => {
         if(current.option1 && JSON.stringify(accumulator).indexOf(current["name"].split(' -')[0]) < 0) {
@@ -74,16 +69,16 @@
       }();
       console.log('framing_cache.options_price',framing_cache.options_price)
       
-      framing_cache.current_selection = { main_product: { id: "{{ product.selected_or_first_available_variant.id }}", name: "{{ product.title }}", price: {{ product.selected_or_first_available_variant.price }} }, frame_product: {} };
+      framing_cache.current_selection = { main_product: { id: first_variant_id, name: product_title, price: first_variant_price }, frame_product: {} };
       framing_cache.artwork_sizes = function () {
         let artwork_options = []
-        let raw_variants = {{ product.variants | json }};
+        let raw_variants = product_variants;
         raw_variants.forEach(rv=>{
           artwork_options.push({id: rv.id, size: rv.option1})
         })
         return artwork_options
       }()
-      framing_cache.preview_image = {{ product.selected_or_first_available_variant.metafields.custom.preview_image.value | json }};
+      framing_cache.preview_image = first_variant_metafield_preview_image;
 
       framing_cache.steps = function() {
         let step_complete_icon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g><path fill-rule="evenodd" clip-rule="evenodd" d="M9.70711 14.2929L19 5L20.4142 6.41421L9.70711 17.1213L4 11.4142L5.41421 10L9.70711 14.2929Z" fill="#fff"></path></g></svg>`;
@@ -401,7 +396,7 @@
         let overview_artwork_price = document.createElement('div');
         overview_artwork_price.style.cssText = `font-size: 18px;`;
         overview_artwork_price.setAttribute('class','h2');
-        overview_artwork_price.innerHTML = "{{ cart.currency.symbol }}" + framing_cache.current_selection.main_product.price/100;
+        overview_artwork_price.innerHTML = curr_symbol + framing_cache.current_selection.main_product.price/100;
         overview_artwork_row.appendChild(overview_artwork_price);
 
         if (framing_cache.current_selection.frame_product && framing_cache.current_selection.frame_product.id) {
@@ -426,9 +421,9 @@
         overview_frame_price.setAttribute('class','h2');
         overview_frame_price.innerHTML = function() {
           if (framing_cache.current_selection.glazing_product && framing_cache.current_selection.glazing_product.name) {
-            return "{{ cart.currency.symbol }}" + (framing_cache.current_selection.frame_product.price-framing_cache.current_selection.glazing_product.price)/100
+            return curr_symbol + (framing_cache.current_selection.frame_product.price-framing_cache.current_selection.glazing_product.price)/100
           } else {
-            return "{{ cart.currency.symbol }}" + framing_cache.current_selection.frame_product.price/100;
+            return curr_symbol + framing_cache.current_selection.frame_product.price/100;
           }
         }();
         overview_frame_row.appendChild(overview_frame_price);
@@ -454,7 +449,7 @@
         let overview_glazing_price = document.createElement('div');
         overview_glazing_price.style.cssText = `font-size: 18px;`;
         overview_glazing_price.setAttribute('class','h2');
-        overview_glazing_price.innerHTML = framing_cache.current_selection.glazing_product.price === 0 ? 'FREE' : "{{ cart.currency.symbol }}" + (framing_cache.current_selection.glazing_product.price/100);
+        overview_glazing_price.innerHTML = framing_cache.current_selection.glazing_product.price === 0 ? 'FREE' : curr_symbol + (framing_cache.current_selection.glazing_product.price/100);
         overview_glazing_row.appendChild(overview_glazing_price);
         }
 
@@ -474,13 +469,13 @@
         overview_total_price.innerHTML = function() {
           console.log('framing_cache2',framing_cache)
           if (framing_cache.current_selection.mount_product && framing_cache.current_selection.mount_product.id && framing_cache.current_selection.glazing_product && framing_cache.current_selection.glazing_product.id && framing_cache.current_selection.frame_product && framing_cache.current_selection.frame_product.id) {
-            return "{{ cart.currency.symbol }}" + (framing_cache.current_selection.main_product.price + framing_cache.current_selection.mount_product.price + framing_cache.current_selection.glazing_product.price + framing_cache.current_selection.frame_product.price)/100;
+            return curr_symbol + (framing_cache.current_selection.main_product.price + framing_cache.current_selection.mount_product.price + framing_cache.current_selection.glazing_product.price + framing_cache.current_selection.frame_product.price)/100;
           } else if (framing_cache.current_selection.glazing_product && framing_cache.current_selection.glazing_product.id && framing_cache.current_selection.frame_product && framing_cache.current_selection.frame_product.id) {
-            return "{{ cart.currency.symbol }}" + (framing_cache.current_selection.main_product.price + framing_cache.current_selection.glazing_product.price + framing_cache.current_selection.frame_product.price)/100;
+            return curr_symbol + (framing_cache.current_selection.main_product.price + framing_cache.current_selection.glazing_product.price + framing_cache.current_selection.frame_product.price)/100;
           } else if (framing_cache.current_selection.frame_product && framing_cache.current_selection.frame_product.id) {
-            return "{{ cart.currency.symbol }}" + (framing_cache.current_selection.main_product.price + framing_cache.current_selection.frame_product.price)/100;
+            return curr_symbol + (framing_cache.current_selection.main_product.price + framing_cache.current_selection.frame_product.price)/100;
           } else {
-            return "{{ cart.currency.symbol }}" + (framing_cache.current_selection.main_product.price)/100
+            return curr_symbol + (framing_cache.current_selection.main_product.price)/100
           }
         }();
         overview_total_row.appendChild(overview_total_price);
